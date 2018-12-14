@@ -127,6 +127,29 @@ $app->post(
             ]
         );
 
+	 	// Check if there is a img file
+		if ($app->request->hasFiles()) {
+			foreach ($app->request->getUploadedFiles() as $file) {
+		 		echo "Image found! " . $file->getName() . PHP_EOL;
+				try {
+					if ($file->isUploadedFile() === True){
+						echo "This image has already UPLOADED!!!";
+					}
+					else {
+						$file->moveTo("/var/www/html/my-rest-api/public/img/" . $file->getName());
+						echo "Upload Successful !!!";
+					}
+				}
+				catch (Exception $e)
+				{
+					echo "Message: " . $e->getMessage();
+				}
+			}	
+		} else {
+			echo "no images found!";
+		}
+
+
         // Create a response
         $response = new Response();
 
