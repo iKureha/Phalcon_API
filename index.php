@@ -116,39 +116,16 @@ $app->post(
     function () use ($app) {
         $item = $app->request->getJsonRawBody();
 
-        $phql = 'INSERT INTO Test\Items (title, price, description) VALUES (:title:, :price:, :description:)';
-
-        $status = $app->modelsManager->executeQuery(
-            $phql,
-            [
-                'title' => $item->title,
-                'price' => $item->price,
-                'description' => $item->description,
-            ]
-        );
-
-	 	// Check if there is a img file
-		if ($app->request->hasFiles()) {
-			foreach ($app->request->getUploadedFiles() as $file) {
-		 		echo "Image found! " . $file->getName() . PHP_EOL;
-				try {
-					if ($file->isUploadedFile() === True){
-						echo "This image has already UPLOADED!!!";
-					}
-					else {
-						$file->moveTo("/var/www/html/my-rest-api/public/img/" . $file->getName());
-						echo "Upload Successful !!!";
-					}
-				}
-				catch (Exception $e)
-				{
-					echo "Message: " . $e->getMessage();
-				}
-			}	
-		} else {
-			echo "no images found!";
-		}
-
+		// Use Phql to execute SQL 
+		$phql = 'INSERT INTO Test\Items (title, price, description) VALUES (:title:, :price:, :description:)'; 
+		$status = $app->modelsManager->executeQuery(
+			$phql,
+			[   
+ 				'title' => $item->title,
+ 				'price' => $item->price,
+ 				'description' => $item->description,
+			]
+ 		);
 
         // Create a response
         $response = new Response();
@@ -188,6 +165,74 @@ $app->post(
         return $response;
     }
 );
+
+// Insert a image by using shopping id
+$app->post(
+    '/api/items/image/{id:[0-9]+}',
+    	function ($id) use ($app) {
+        	$item = $app->request->getJsonRawBody();
+			
+			// Check if there is a img file
+			if ($app->request->hasFiles()) {
+				foreach ($app->request->getUploadedFiles() as $file) {
+		 			echo "Image found! " . $file->getName() . PHP_EOL;
+					try {
+							$img_path = "/var/www/html/my-rest-api/public/img/" . $file->getName();
+							$file->moveTo($img_path);
+							echo "Upload Successful !!!";
+        $phql = 'UPDATE Test\Items SET image = :img_path: WHERE id = :id:';
+
+        $status = $app->modelsManager->executeQuery(
+            $phql,
+            [
+                'id'   => $id,
+                'img_path' => $img_path,
+            ]
+        );
+
+        // Create a response
+        $response = new Response();
+
+        // Check if the insertion was successful
+        if ($status->success() === true) {
+            $response->setJsonContent(
+                [
+                    'status' => 'OK'
+                ]
+            );
+        } else {
+            // Change the HTTP status
+            $response->setStatusCode(409, 'Conflict');
+
+            $errors = [];
+
+            foreach ($status->getMessages() as $message) {
+                $errors[] = $message->getMessage();
+            }
+
+            $response->setJsonContent(
+                [
+                    'status'   => 'ERROR',
+                    'messages' => $errors,
+                ]
+            );
+        }
+
+		
+        return $response;
+	
+						}
+					catch (Exception $e) {
+						echo "Message: " . $e->getMessage();
+					}
+				}	
+			} else {
+				echo "no images found!";
+			}
+
+    }
+);
+
 
 // Update data by id
 $app->put(
