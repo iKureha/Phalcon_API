@@ -180,48 +180,45 @@ $app->post(
 							$img_path = "/var/www/html/my-rest-api/public/img/" . $file->getName();
 							$file->moveTo($img_path);
 							echo "Upload Successful !!!";
-        $phql = 'UPDATE Test\Items SET image = :img_path: WHERE id = :id:';
 
-        $status = $app->modelsManager->executeQuery(
-            $phql,
-            [
-                'id'   => $id,
-                'img_path' => $img_path,
-            ]
-        );
+        					$phql = 'UPDATE Test\Items SET image = :img_path: WHERE id = :id:';
+        					$status = $app->modelsManager->executeQuery(
+				            	$phql,
+            						[
+                						'id'   => $id,
+                						'img_path' => $img_path,
+            						]
+        					);
 
-        // Create a response
-        $response = new Response();
+        					// Create a response
+        					$response = new Response();
 
-        // Check if the insertion was successful
-        if ($status->success() === true) {
-            $response->setJsonContent(
-                [
-                    'status' => 'OK'
-                ]
-            );
-        } else {
-            // Change the HTTP status
-            $response->setStatusCode(409, 'Conflict');
+        					// Check if the insertion was successful
+        					if ($status->success() === true) {
+            					$response->setJsonContent(
+                					[
+                    					'status' => 'OK'
+                					]
+            					);
+        					} else {
+            				// Change the HTTP status
+            					$response->setStatusCode(409, 'Conflict');
+            					$errors = [];
 
-            $errors = [];
+            					foreach ($status->getMessages() as $message) {
+                					$errors[] = $message->getMessage();
+            					}
 
-            foreach ($status->getMessages() as $message) {
-                $errors[] = $message->getMessage();
-            }
-
-            $response->setJsonContent(
-                [
-                    'status'   => 'ERROR',
-                    'messages' => $errors,
-                ]
-            );
-        }
-
-		
-        return $response;
-	
+            					$response->setJsonContent(
+                					[
+                  						'status'   => 'ERROR',
+                   	 					'messages' => $errors,
+                					]
+            					);
+        					}
+        					return $response;
 						}
+
 					catch (Exception $e) {
 						echo "Message: " . $e->getMessage();
 					}
