@@ -33,6 +33,10 @@ class Items extends \Phalcon\Mvc\Model
      */
     public $image;
 
+	public $has_image;
+
+	public $update_time;	
+	
     /**
      * Initialize method for model.
      */
