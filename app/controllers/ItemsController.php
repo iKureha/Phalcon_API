@@ -85,7 +85,7 @@ class ItemsController extends ControllerBase
 	
 						$response->setJsonContent(
 							[
-								'status' => 'Image Updated',
+								'status' => 'Updated',
 							], JSON_UNESCAPED_UNICODE
 						);
 					}
@@ -98,7 +98,7 @@ class ItemsController extends ControllerBase
 				// if there is no image, update item			
 				$item = Items::findFirst($id);	
 				if ($item->update($data) == True) {
-					$response->setStatusCode(201, 'Data Updated');
+					$response->setStatusCode(201, 'Updated');
 					$response->setJsonContent(
 						[
 							'status' => 'Updated',
@@ -146,7 +146,7 @@ class ItemsController extends ControllerBase
 			case 'DELETE':
 				$item = Items::findFirst($id);	
 				if ($item->delete() == True) {
-					$response->setStatusCode(201, 'Data Deleted');
+					$response->setStatusCode(204, 'Deleted');
 					$response->setJsonContent(
 						[
 							'status' => 'Deleted',
