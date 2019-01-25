@@ -8,10 +8,12 @@ class ItemsController extends ControllerBase
 
 	public function indexAction($id)
 	{
+		// because this is an API, disable view 
 		$this->view->disable();
+
 		$request = new Request();				
 		$response = new Response();
-			
+		
 		switch ($request->getMethod()) {
 		
 			// Get data by id
@@ -68,8 +70,7 @@ class ItemsController extends ControllerBase
 			// update data/image by id 
 			case 'POST':
 				$item = new Items;
-				$data = json_decode(file_get_contents('php://input'), true);
-				
+
 				// check if there is an image
 				if	($request->hasFiles() && !empty($id)) {
 					foreach ($request->getUploadedFiles() as $file) {					
@@ -96,6 +97,10 @@ class ItemsController extends ControllerBase
 				}
 
 				// if there is no image, update item			
+				$data = json_decode($request->getRawBody(), true);
+				// アップロードされたデータはjsonではない場合、中止
+				if (empty($data)) {return "Bad Json!";} 
+
 				$item = Items::findFirst($id);	
 				if ($item->update($data) == True) {
 					$response->setStatusCode(201, 'Updated');
@@ -120,9 +125,12 @@ class ItemsController extends ControllerBase
 			// create a new item
 			case 'PUT':
 				$item = new Items;
-				$data = json_decode(file_get_contents('php://input'), true);
-
-				if ($item->create($data) == True) {
+				$data = json_decode($request->getRawBody(), true);
+				
+				// アップロードされたデータはjsonではない場合、中止
+				if (empty($data)) {return "Bad Json!";}
+				
+				if ($item->save($data) == True) {
 					$response->setStatusCode(201, 'Created');
 					$response->setJsonContent(
 						[
