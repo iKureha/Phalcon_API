@@ -6,5 +6,4 @@ $router = $di->getRouter();
 
 $router->add('/items/{id:[0-9]+}', 'Items::index');
 
-
 $router->handle();

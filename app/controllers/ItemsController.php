@@ -13,15 +13,19 @@ class ItemsController extends ControllerBase
 
 		$request = new Request();				
 		$response = new Response();
-		
+	
 		switch ($request->getMethod()) {
-		
+			
+			// For test
+			case HEAD:
+				
 			// Get data by id
 			case 'GET':
+				echo "GET";
 				if (!empty($id)){
 					$item = Items::findFirst($id);	
 							
-					if ($item == true){
+					if ($item){
 						$data[] = [
 							'id' => $item->id,
 							'title' => $item->title,
@@ -40,6 +44,7 @@ class ItemsController extends ControllerBase
 					}
 					else {
 						$response->setJsonContent(['status' => 'Not Found']);
+						$response->setStatusCode(404, 'Not Found');
 					}
 				}
 
@@ -69,6 +74,7 @@ class ItemsController extends ControllerBase
 		
 			// update data/image by id 
 			case 'POST':
+				echo "POST";
 				$item = new Items;
 
 				// check if there is an image
@@ -79,7 +85,7 @@ class ItemsController extends ControllerBase
 					}
 					
 					$item = Items::findFirst($id);			
-					if ($item == true){
+					if ($item){
 						$item->image = $img_path;
 						$item->has_image = '1';
 						$item->update();		
@@ -102,7 +108,7 @@ class ItemsController extends ControllerBase
 				if (empty($data)) {return "Bad Json!";} 
 
 				$item = Items::findFirst($id);	
-				if ($item->update($data) == True) {
+				if ($item->update($data)) {
 					$response->setStatusCode(201, 'Updated');
 					$response->setJsonContent(
 						[
@@ -124,13 +130,14 @@ class ItemsController extends ControllerBase
 
 			// create a new item
 			case 'PUT':
+				echo "put";
 				$item = new Items;
 				$data = json_decode($request->getRawBody(), true);
 				
 				// アップロードされたデータはjsonではない場合、中止
 				if (empty($data)) {return "Bad Json!";}
 				
-				if ($item->save($data) == True) {
+				if ($item->save($data)) {
 					$response->setStatusCode(201, 'Created');
 					$response->setJsonContent(
 						[
@@ -152,8 +159,9 @@ class ItemsController extends ControllerBase
 
 			// delete data by id
 			case 'DELETE':
+				echo "delete";
 				$item = Items::findFirst($id);	
-				if ($item->delete() == True) {
+				if ($item->delete()) {
 					$response->setStatusCode(204, 'Deleted');
 					$response->setJsonContent(
 						[
@@ -172,6 +180,8 @@ class ItemsController extends ControllerBase
 
 
 			default:
+				$response->setJsonContent(['status' => 'Not Found']);
+				$response->setStatusCode(404, 'Not Found');
 				break;
 		}
 		return $response;
